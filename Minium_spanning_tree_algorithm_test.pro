@@ -5,7 +5,10 @@ CONFIG -= qt
 
 SOURCES += \
         main.cpp \
-    algorithms.cpp
+    disjoint_set.cpp \
+    graph.cpp
 
 HEADERS += \
-    algorithms.hh
+    disjoint_set.hh \
+    struct_header.hh \
+    graph.hh

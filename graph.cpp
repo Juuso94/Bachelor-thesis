@@ -1,4 +1,16 @@
-#include "algorithms.hh"
+#include "graph.hh"
+
+using std::find;
+using std::swap;
+using std::vector;
+using std::remove;
+using std::map;
+using std::tuple;
+using std::make_tuple;
+using std::set;
+using std::pair;
+using std::make_pair;
+using std::sort;
 
 Graph::Graph()
 {
@@ -80,7 +92,7 @@ void Graph::add_edges(int amount, int N)
         Vertex* neigbhor_vertex = visited_vertices.at(random_index);
 
 
-        add_edge(new_vertex, neigbhor_vertex, weight(gen));
+        add_edge(weight(gen), new_vertex, neigbhor_vertex);
         edge_count++;
 
         visited_vertices.push_back(new_vertex);
@@ -94,29 +106,40 @@ void Graph::add_edges(int amount, int N)
         Vertex* vertex_b = vertices_.at(random_index);
 
         if(vertex_a != vertex_b && vertex_a->adjcacent_vertices.find(vertex_b) == vertex_a->adjcacent_vertices.end()){
-            add_edge(vertex_a, vertex_b, weight(gen));
+            add_edge( weight(gen), vertex_a, vertex_b);
             edge_count++;
         }
     }
+     /*
     int sum = 0;
 
-    // Tarkastuksia debuggausta varten.
+    Tarkastuksia debuggausta varten.
     for (auto vertex: vertices_)
     {
         std::cout<<vertex->degree<<" ";
         sum += vertex->degree;
     }
 
-    std::cout<<sum;
+    std::cout<<sum<<std::endl;
+    */
 }
 
 void Graph::add_vertex()
 {
-    Vertex *vertex = new Vertex {{}, false, 0};
+    Vertex *vertex = new Vertex();
     vertices_.push_back(vertex);
 }
 
-void Graph::add_edge(Vertex* first, Vertex* second, int weight)
+void Graph::add_vertex(Vertex* vertex)
+{
+    //Adding vertices to kruskal tree and
+    //clearing their adjacency lists.
+    vertex->adjcacent_vertices.clear();
+    vertices_.push_back(vertex);
+
+}
+
+void Graph::add_edge(int weight, Vertex* first, Vertex* second)
 {
     first->adjcacent_vertices.insert(make_pair(second, weight));
     second->adjcacent_vertices.insert(make_pair(first, weight));
@@ -124,6 +147,93 @@ void Graph::add_edge(Vertex* first, Vertex* second, int weight)
     second->degree++;
 
 
-    edges_.push_back(make_tuple(first, second, weight));
+    edges_.push_back(make_tuple(weight, first, second));
 
 }
+//Kruskal algoritmi
+Graph Graph::KruskalMst(int N)
+{
+
+    Graph tree;
+    Vertex* first;
+    Vertex* second;
+    Vertex* first_set;
+    Vertex* second_set;
+    int edge_counter = 0;
+
+    //initialize tree as a disjoint sets.
+    for(auto vertex: vertices_){
+        tree.add_vertex(vertex);
+    }
+
+    sort(edges_.begin(), edges_.end());
+
+    for(auto edge: edges_){
+        first = std::get<1>(edge);
+        second = std::get<2>(edge);
+
+        first_set = tree.find_Set(first);
+        second_set = tree.find_Set(second);
+
+        if(first_set != second_set){
+            tree.union_sets(first_set, second_set);
+
+            tree.add_edge(std::get<0>(edge), first, second);
+            ++edge_counter;
+
+        }
+        if(edge_counter >= N-1){
+            return tree;
+        }
+    }
+    return tree;
+
+
+}
+
+Vertex* Graph::find_Set(Vertex* searched)
+{
+    if(searched->parent != searched){
+        searched->parent = find_Set(searched->parent);
+    }
+    return searched->parent;
+}
+
+void Graph::union_sets(Vertex *a, Vertex *b)
+{
+    a = find_Set(a);
+    b = find_Set(b);
+    if(a == b){return;}
+
+    if(a->key > b->key){
+        b->parent = a;
+    }
+    else if(a->key < b->key){
+        a->parent = b;
+    }
+    else{
+        b->parent = a;
+        a->key++;
+    }
+
+}
+
+void Graph::test()
+{
+    int sum = 0;
+    for(auto edge: edges_){
+        sum += std::get<0>(edge);
+    }
+    std::cout<<sum<<std::endl;;
+}
+
+
+
+
+
+
+
+
+
+
+
