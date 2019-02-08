@@ -10,9 +10,9 @@
 
 #include <algorithm>
 
-
 #include <vector>
 
+#include <queue>
 
 #include <map>
 
@@ -31,17 +31,24 @@ class Graph
 {
 public:
     Graph();
-    ~Graph();
+    ~Graph() = default;
+
+    void clear();
+
     void add_vertices(int amount);
     void add_edges(int amount, int N);
 
     void add_vertex();
     void add_vertex(Vertex* vertex);
+
     void add_edge(int weight, Vertex* first, Vertex* second);
+    void add_edge_mst(int weight, Vertex* first, Vertex* second);
 
     Graph KruskalMst(int N);
-    Vertex *find_Set(Vertex* searched);
-    void union_sets(Vertex* a, Vertex* b);
+
+    Graph PrimMst(int N);
+
+    int size();
 
     void test();
 
@@ -49,6 +56,13 @@ public:
 private:
     std::vector<Vertex*> vertices_;
     std::vector<std::tuple<int, Vertex*, Vertex*>> edges_;
+
+    Vertex *find_Set(Vertex* searched);
+    void union_sets(Vertex* a, Vertex* b);
+
+    static bool compare_edge_weight(const Vertex *a, const Vertex *b);
+
+    bool is_adjacent(Vertex* p);
 
 
 };

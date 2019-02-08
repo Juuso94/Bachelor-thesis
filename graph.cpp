@@ -12,13 +12,22 @@ using std::pair;
 using std::make_pair;
 using std::sort;
 
+
 Graph::Graph()
 {
-
+    vertices_ = {};
+    edges_ = {};
 }
 
-Graph::~Graph()
+
+
+void Graph::clear()
 {
+    for (auto vertex: vertices_) {
+        delete vertex;
+    }
+    vertices_.clear();
+    edges_.clear();
 
 }
 
@@ -33,8 +42,9 @@ void Graph::add_edges(int amount, int N)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
+    //gen.seed(time(nullptr));
     std::uniform_int_distribution<> weight(1, 1000);
-    srand(time(nullptr));
+
     int edge_count = 0;
 
 
@@ -75,7 +85,8 @@ void Graph::add_edges(int amount, int N)
 
     vector<Vertex*> all_vertices = vertices_;
     vector<Vertex*> visited_vertices;
-    int random_index = rand() % N;
+    std::uniform_int_distribution<> all_random(0, N - 1);
+    int random_index = all_random(gen);
     Vertex* root = vertices_.at(random_index);
     all_vertices.erase(all_vertices.begin() + random_index);
     visited_vertices.push_back(root);
@@ -134,7 +145,7 @@ void Graph::add_vertex(Vertex* vertex)
 {
     //Adding vertices to kruskal tree and
     //clearing their adjacency lists.
-    vertex->adjcacent_vertices.clear();
+    //vertex->key = 0;
     vertices_.push_back(vertex);
 
 }
@@ -150,7 +161,16 @@ void Graph::add_edge(int weight, Vertex* first, Vertex* second)
     edges_.push_back(make_tuple(weight, first, second));
 
 }
-//Kruskal algoritmi
+
+void Graph::add_edge_mst(int weight, Vertex *first, Vertex *second)
+{
+    first->adjcacent_vertices_mst.insert(make_pair(second, weight));
+    second->adjcacent_vertices_mst.insert(make_pair(first, weight));
+
+
+    edges_.push_back(make_tuple(weight, first, second));
+}
+//Kruskal algortmi
 Graph Graph::KruskalMst(int N)
 {
 
@@ -169,6 +189,7 @@ Graph Graph::KruskalMst(int N)
     sort(edges_.begin(), edges_.end());
 
     for(auto edge: edges_){
+
         first = std::get<1>(edge);
         second = std::get<2>(edge);
 
@@ -178,7 +199,7 @@ Graph Graph::KruskalMst(int N)
         if(first_set != second_set){
             tree.union_sets(first_set, second_set);
 
-            tree.add_edge(std::get<0>(edge), first, second);
+            tree.add_edge_mst(std::get<0>(edge), first, second);
             ++edge_counter;
 
         }
@@ -216,6 +237,74 @@ void Graph::union_sets(Vertex *a, Vertex *b)
         a->key++;
     }
 
+}
+
+Graph Graph::PrimMst(int N)
+{
+    Graph tree;
+
+    std::priority_queue<Vertex*, vector<Vertex*>,
+            decltype(&compare_edge_weight)> queue(&compare_edge_weight);
+    Vertex* root = vertices_.at(0);
+    Vertex* vertex;
+
+
+
+    //tree.add_vertex(root);
+    root->distance = 0;
+    queue.push(root);
+
+    while(!queue.empty()){
+        vertex = queue.top();
+        queue.pop();
+        if(vertex->visited == true){continue;}
+        if(vertex->distance > queue.top()->distance){
+            queue.push(vertex);
+            continue;
+        }
+        tree.add_vertex(vertex);
+        std::cout<<vertex->distance<<std::endl;
+
+        if(tree.size() == N){break;}
+
+        for(auto edge: vertex->adjcacent_vertices){
+            if(edge.first->visited == false && edge.first->distance > edge.second){
+                edge.first->distance = edge.second;
+                edge.first->parent = vertex;
+
+                queue.push(edge.first);
+                //std::cout<<queue.top()->distance<<std::endl;
+
+
+            }
+           /*else {
+                if((edge).first->distance > (edge).second && (edge).first != vertex->parent){
+                    (edge).first->distance = (edge).second;
+                     (edge).first->parent = vertex;
+                }
+            }
+        */
+
+        }
+        vertex->visited = true;
+    }
+    for(auto vertex: vertices_){
+        if(vertex->parent != vertex){
+            tree.add_edge_mst(vertex->distance, vertex, vertex->parent);
+        }
+    }
+    return tree;
+
+}
+
+int Graph::size()
+{
+    return vertices_.size();
+}
+
+bool Graph::compare_edge_weight(const Vertex *a, const Vertex *b)
+{
+    return a->distance > b->distance;
 }
 
 void Graph::test()

@@ -10,10 +10,11 @@ int main()
 
 
 
-    int N = 6000;
+    int N = 7;
 
 
-    int M = 0.1*(N*(N-1));
+    //int M = 0.1*(N*(N-1));
+    int M = 16;
 
     std::cout<<M<<std::endl;
 
@@ -26,10 +27,15 @@ int main()
 
     std::chrono::duration<double> duration = end - start;
 
-    std::cout<<duration.count()<<std::endl;
+    std::cout<<std::endl<<duration.count()<<std::endl;
+
 
     graph.test();
     tree.test();
+
+    //tree = tree.KruskalMst(N);
+
+    graph.clear();
 
     return 0;
 }
