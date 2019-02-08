@@ -243,37 +243,39 @@ Graph Graph::PrimMst(int N)
 {
     Graph tree;
 
-    std::priority_queue<Vertex*, vector<Vertex*>,
+    std::priority_queue<pair<int, Vertex*>, vector<pair<int, Vertex*>>,
             decltype(&compare_edge_weight)> queue(&compare_edge_weight);
     Vertex* root = vertices_.at(0);
-    Vertex* vertex;
+    pair<int, Vertex*> vertex;
 
 
 
     //tree.add_vertex(root);
     root->distance = 0;
-    queue.push(root);
+    queue.push(make_pair(root->distance ,root));
 
     while(!queue.empty()){
         vertex = queue.top();
         queue.pop();
-        if(vertex->visited == true){continue;}
-        if(vertex->distance > queue.top()->distance){
+        if(vertex.second->visited == true){continue;}
+        /*if(vertex->distance > queue.top()->distance){
             queue.push(vertex);
             continue;
-        }
-        tree.add_vertex(vertex);
-        std::cout<<vertex->distance<<std::endl;
+        }*/
+        tree.add_vertex(vertex.second);
+        vertex.second->distance = vertex.first;
+        //std::cout<<vertex->distance<<std::endl;
 
         if(tree.size() == N){break;}
 
-        for(auto edge: vertex->adjcacent_vertices){
+        for(auto edge: vertex.second->adjcacent_vertices){
             if(edge.first->visited == false && edge.first->distance > edge.second){
-                edge.first->distance = edge.second;
-                edge.first->parent = vertex;
+                //edge.first->distance = edge.second;
+                edge.first->parent = vertex.second;
 
-                queue.push(edge.first);
+                queue.push(make_pair(edge.second, edge.first));
                 //std::cout<<queue.top()->distance<<std::endl;
+
 
 
             }
@@ -286,7 +288,7 @@ Graph Graph::PrimMst(int N)
         */
 
         }
-        vertex->visited = true;
+        vertex.second->visited = true;
     }
     for(auto vertex: vertices_){
         if(vertex->parent != vertex){
@@ -302,9 +304,9 @@ int Graph::size()
     return vertices_.size();
 }
 
-bool Graph::compare_edge_weight(const Vertex *a, const Vertex *b)
+bool Graph::compare_edge_weight(const pair<int,Vertex*> a, const pair<int,Vertex*> b)
 {
-    return a->distance > b->distance;
+    return a.first >= b.first;
 }
 
 void Graph::test()

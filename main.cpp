@@ -10,11 +10,11 @@ int main()
 
 
 
-    int N = 7;
+    int N = 1000000;
 
 
-    //int M = 0.1*(N*(N-1));
-    int M = 16;
+    //int M = 0.05*(N*(N-1));
+    int M = 1000050;
 
     std::cout<<M<<std::endl;
 
@@ -22,7 +22,7 @@ int main()
     graph.add_edges(M, N);
 
     auto start = std::chrono::high_resolution_clock::now();
-    Graph tree = graph.KruskalMst(N);
+    Graph tree = graph.PrimMst(N);
     auto end = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> duration = end - start;

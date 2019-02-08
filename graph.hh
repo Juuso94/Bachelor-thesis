@@ -6,7 +6,7 @@
 #include <random>
 
 #include <struct_header.hh>
-#include <disjoint_set.hh>
+#include <min_heap.hh>
 
 #include <algorithm>
 
@@ -60,7 +60,7 @@ private:
     Vertex *find_Set(Vertex* searched);
     void union_sets(Vertex* a, Vertex* b);
 
-    static bool compare_edge_weight(const Vertex *a, const Vertex *b);
+    static bool compare_edge_weight(const pair<int,Vertex*> a, const pair<int,Vertex*> b);
 
     bool is_adjacent(Vertex* p);
 
