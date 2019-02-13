@@ -1,41 +1,62 @@
 #include <iostream>
 #include <graph.hh>
 #include <chrono>
+#include <fstream>
+#include <string>
+#include <math.h>
 
 
 
 int main()
 {
-    Graph graph;
+    std::ofstream outfile;
+    outfile.open("Prim_sparse.txt", std::ios::app);
 
+    std::vector<int> test_cases = {5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000};
 
+    for(auto N: test_cases){
 
-    int N = 1000000;
+        //int M = sqrt(N) * N;
 
+        int M = 5 * N;
 
-    //int M = 0.05*(N*(N-1));
-    int M = 1000050;
+        double mean = 0;
 
-    std::cout<<M<<std::endl;
+        outfile << "Prim, "<< N <<" "<< M;
 
-    graph.add_vertices(N);
-    graph.add_edges(M, N);
+        for (int i = 0; i< 20; i++) {
 
-    auto start = std::chrono::high_resolution_clock::now();
-    Graph tree = graph.PrimMst(N);
-    auto end = std::chrono::high_resolution_clock::now();
+            Graph graph;
 
-    std::chrono::duration<double> duration = end - start;
+            //std::cout<<endl<<M<<std::endl;
 
-    std::cout<<std::endl<<duration.count()<<std::endl;
+            graph.add_vertices(N);
+            graph.add_edges(M, N);
 
+            auto start = std::chrono::high_resolution_clock::now();
+            Graph tree = graph.PrimMst(N);
+            auto end = std::chrono::high_resolution_clock::now();
 
-    graph.test();
-    tree.test();
+            std::chrono::duration<double> duration = end - start;
 
-    //tree = tree.KruskalMst(N);
+            double result = log2(duration.count() * 1000);
 
-    graph.clear();
+            mean += result;
 
+            auto result_string = std::to_string(result);
+
+            //std::cout<<result<< endl;
+
+            //graph.test();
+            //tree.test();
+
+            outfile<< " " << result_string << " ";
+
+            graph.clear();
+
+        }
+        mean = mean / 20;
+        outfile << mean << endl << endl;
+    }
     return 0;
 }

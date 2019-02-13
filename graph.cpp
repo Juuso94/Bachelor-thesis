@@ -19,12 +19,13 @@ Graph::Graph()
     edges_ = {};
 }
 
-
-
 void Graph::clear()
 {
     for (auto vertex: vertices_) {
-        delete vertex;
+        if(vertex != nullptr)
+            delete vertex;
+            vertex = nullptr;
+
     }
     vertices_.clear();
     edges_.clear();
@@ -42,8 +43,8 @@ void Graph::add_edges(int amount, int N)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
-    //gen.seed(time(nullptr));
-    std::uniform_int_distribution<> weight(1, 1000);
+    gen.seed(time(nullptr));
+    std::uniform_int_distribution<> weight(1, amount);
 
     int edge_count = 0;
 
@@ -120,6 +121,7 @@ void Graph::add_edges(int amount, int N)
             add_edge( weight(gen), vertex_a, vertex_b);
             edge_count++;
         }
+        if(edges_.size() >= 0.5*(N*(N-1))){break;}
     }
      /*
     int sum = 0;
@@ -181,7 +183,7 @@ Graph Graph::KruskalMst(int N)
     Vertex* second_set;
     int edge_counter = 0;
 
-    //initialize tree as a disjoint sets.
+    //Alusta puun solmut erillisiksi puiksi
     for(auto vertex: vertices_){
         tree.add_vertex(vertex);
     }
@@ -208,8 +210,6 @@ Graph Graph::KruskalMst(int N)
         }
     }
     return tree;
-
-
 }
 
 Vertex* Graph::find_Set(Vertex* searched)
@@ -241,62 +241,50 @@ void Graph::union_sets(Vertex *a, Vertex *b)
 
 Graph Graph::PrimMst(int N)
 {
-    Graph tree;
+    Graph tree; //Luodaan graafi johon puu rakennetaan
 
+    // Luodaan prioriteetti jono joka käyttää omaa vertaus functiota.
     std::priority_queue<pair<int, Vertex*>, vector<pair<int, Vertex*>>,
             decltype(&compare_edge_weight)> queue(&compare_edge_weight);
-    Vertex* root = vertices_.at(0);
+    Vertex* root = vertices_.at(0); //Valitaan aloitus solmu
     pair<int, Vertex*> vertex;
 
 
-
-    //tree.add_vertex(root);
     root->distance = 0;
     queue.push(make_pair(root->distance ,root));
 
+    //Käydään silmukassa läpi prioriteetti jonoa
     while(!queue.empty()){
         vertex = queue.top();
         queue.pop();
         if(vertex.second->visited == true){continue;}
-        /*if(vertex->distance > queue.top()->distance){
-            queue.push(vertex);
-            continue;
-        }*/
+
         tree.add_vertex(vertex.second);
         vertex.second->distance = vertex.first;
-        //std::cout<<vertex->distance<<std::endl;
+
+        // Lisätään jonosta otettu solmu puuhun.
+        if(vertex.second->parent != vertex.second){
+            tree.add_edge_mst(vertex.second->distance,
+                              vertex.second,
+                              vertex.second->parent);
+        }
 
         if(tree.size() == N){break;}
 
+        //käydään läpi kaikki tutkittavan solmun kaaret.
         for(auto edge: vertex.second->adjcacent_vertices){
-            if(edge.first->visited == false && edge.first->distance > edge.second){
-                //edge.first->distance = edge.second;
+            if(edge.first->visited == false &&
+                    edge.first->distance > edge.second){
                 edge.first->parent = vertex.second;
 
                 queue.push(make_pair(edge.second, edge.first));
-                //std::cout<<queue.top()->distance<<std::endl;
-
 
 
             }
-           /*else {
-                if((edge).first->distance > (edge).second && (edge).first != vertex->parent){
-                    (edge).first->distance = (edge).second;
-                     (edge).first->parent = vertex;
-                }
-            }
-        */
-
         }
         vertex.second->visited = true;
     }
-    for(auto vertex: vertices_){
-        if(vertex->parent != vertex){
-            tree.add_edge_mst(vertex->distance, vertex, vertex->parent);
-        }
-    }
     return tree;
-
 }
 
 int Graph::size()
